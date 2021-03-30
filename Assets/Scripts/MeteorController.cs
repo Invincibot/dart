@@ -8,7 +8,7 @@ public class MeteorController : NetworkBehaviour
 {
     private static float unitSize = 0.01f;
     private static float startSize = 0.05f;
-    
+
     [SerializeField] private int size;
 
     public override void OnStartServer()
@@ -30,7 +30,7 @@ public class MeteorController : NetworkBehaviour
         transform.localScale = worldRadius * Vector3.one;
         return worldRadius;
     }
-    
+
     [ServerCallback]
     private void OnTriggerEnter2D(Collider2D other)
     {
@@ -43,6 +43,7 @@ public class MeteorController : NetworkBehaviour
                 Destroy(gameObject);
                 return;
             }
+
             ScaleToSize();
         }
     }

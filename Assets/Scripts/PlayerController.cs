@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using Mirror;
+using Mono.CecilX;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -11,56 +10,46 @@ public class PlayerController : NetworkBehaviour
     [SerializeField] [Range(1, 360)] private float rotateSpeed;
 
     [SerializeField] private Transform firePoint;
-    [SerializeField] private GameObject bullet;
-    [SerializeField] [Range(0, 10)] private float bulletSpeed;
-    
+    [SerializeField] private GameObject bulletPrefab;
+
     private Rigidbody2D _rigidbody2D;
     private Collider2D _collider2D;
     private InputAction _moveAction;
     private InputAction _fireAction;
 
-    public override void OnStartAuthority()
+    private void Start()
     {
         _rigidbody2D = GetComponent<Rigidbody2D>();
         _collider2D = GetComponent<Collider2D>();
-        
+    }
+
+    public override void OnStartAuthority()
+    {
         PlayerInput playerInput = GetComponent<PlayerInput>();
         _moveAction = playerInput.actions["Move"];
         _fireAction = playerInput.actions["Fire"];
     }
 
-    [ClientCallback]
     private void Update()
     {
-        if (!isLocalPlayer)
-        {
-            return;
-        }
-        
-        if (!_fireAction.triggered)
-        {
-            return;
-        }
-        
-        GameObject _bullet = Instantiate(bullet, firePoint.position, transform.rotation);
-        Rigidbody2D _bulletRigidbody2D = _bullet.GetComponent<Rigidbody2D>();
-        float _rotation = _rigidbody2D.rotation * Mathf.Deg2Rad;
-        Vector2 _direction = new Vector2( Mathf.Cos(_rotation), Mathf.Sin(_rotation));
-        _bulletRigidbody2D.velocity = _direction * bulletSpeed;
-        _bulletRigidbody2D.rotation = _rigidbody2D.rotation;
-        Physics2D.IgnoreCollision(_collider2D, _bullet.GetComponent<Collider2D>());
-    }
+        if (!isLocalPlayer) return;
 
-    [ClientCallback]
-    private void FixedUpdate()
-    {
-        if (!isLocalPlayer)
-        {
-            return;
-        }
         Vector2 moveDirection = _moveAction.ReadValue<Vector2>();
         _rigidbody2D.AddRelativeForce(moveDirection.y * moveSpeed * Time.deltaTime * Vector2.right);
         _rigidbody2D.angularVelocity = -moveDirection.x * rotateSpeed;
+
+        if (_fireAction.triggered)
+        {
+            CmdFire();
+        }
+    }
+    
+    [Command]
+    private void CmdFire()
+    {
+        GameObject bullet = Instantiate(bulletPrefab, firePoint.position, transform.rotation);
+        Physics2D.IgnoreCollision(_collider2D, bullet.GetComponent<Collider2D>());
+        NetworkServer.Spawn(bullet);
     }
 
     [ServerCallback]

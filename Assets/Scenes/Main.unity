@@ -171,13 +171,14 @@ MonoBehaviour:
     type: 3}
   autoCreatePlayer: 1
   playerSpawnMethod: 0
-  spawnPrefabs: []
+  spawnPrefabs:
+  - {fileID: 2944940824702718759, guid: b68b84e0172c4e44c837339eb3d0ca5f, type: 3}
+  - {fileID: 6583496351783706394, guid: 1262c074ac366cf4cb1e8bd0b0014884, type: 3}
   boundaryWalls:
   - {fileID: 897935980}
   - {fileID: 1688903922}
   - {fileID: 1041759244}
   - {fileID: 1121490465}
-  meteor: {fileID: 2944940824702718759, guid: b68b84e0172c4e44c837339eb3d0ca5f, type: 3}
   maxForce: 150
   minimumSpawningDistance: 0.05
   minMeteors: 5

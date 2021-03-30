@@ -1,40 +1,37 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using Mirror;
-using Telepathy;
+﻿using Mirror;
 using UnityEngine;
-using Random = UnityEngine.Random;
 
-public class GameManager : NetworkManager
+[AddComponentMenu("")]
+public class MainNetworkManager : NetworkManager
 {
     [Header("Boundary Walls")]
     [SerializeField] private Transform[] boundaryWalls;
+
     private Rect _bounds;
-    
-    [Header("Meteor Settings")]
-    [SerializeField] private GameObject meteor;
+
+    [Header("Meteor Settings")] 
+    [SerializeField] private GameObject meteorPrefab;
     [SerializeField] [Range(0, 1000)] private float maxForce = 2;
     [SerializeField] [Range(0.01f, 1f)] private float minimumSpawningDistance = 0.05f;
     private static int maxSpawnAttempts = 100;
-    
-    [HideInInspector] public int minMeteors = 5;
-    [HideInInspector] public int maxMeteors = 25;
 
-    [HideInInspector] public int minMeteorSize = 1;
-    [HideInInspector] public int maxMeteorSize = 5;
+    [SerializeField] private int minMeteors = 5;
+    [SerializeField] private int maxMeteors = 25;
+    [SerializeField] private int minMeteorSize = 1;
+    [SerializeField] private int maxMeteorSize = 5;
+
+    private GameObject[] _meteors;
 
     public override void OnStartServer()
     {
         base.OnStartServer();
-        
+
         _bounds.xMax = boundaryWalls[0].position.x;
         _bounds.yMax = boundaryWalls[1].position.y;
         _bounds.xMin = boundaryWalls[2].position.x;
         _bounds.yMin = boundaryWalls[3].position.y;
-        
-        // spawnPrefabs.Add(meteor);
-        // SpawnMeteors();
+
+        meteorPrefab = spawnPrefabs.Find(prefab => prefab.name == "Meteor");
     }
 
     public override void OnServerAddPlayer(NetworkConnection conn)
@@ -45,28 +42,50 @@ public class GameManager : NetworkManager
         float angle = Vector2.Angle(Vector2.right, _bounds.center - startingPosition);
         player.transform.rotation = Quaternion.Euler(0, 0, angle);
         NetworkServer.AddPlayerForConnection(conn, player);
+
+        if (numPlayers > 1)
+        {
+            SpawnMeteors();
+        }
     }
 
     private void SpawnMeteors()
     {
         int numMeteors = Random.Range(minMeteors, maxMeteors + 1);
+        _meteors = new GameObject[numMeteors];
         for (int i = 0; i < numMeteors; i++)
         {
-            GameObject meteorInstance = Instantiate(meteor);
+            GameObject meteor = Instantiate(meteorPrefab);
             float force = Random.Range(0, maxForce);
-            meteorInstance.GetComponent<Rigidbody2D>().AddForce(Random.insideUnitCircle * force);
+            meteor.GetComponent<Rigidbody2D>().AddForce(Random.insideUnitCircle * force);
             int size = Random.Range(minMeteorSize, maxMeteorSize + 1);
-            float worldRadius = meteorInstance.GetComponent<MeteorController>().Resize(size);
-            meteorInstance.transform.position = GetValidSpawningPosition(worldRadius);
-            NetworkServer.Spawn(meteorInstance);
+            float worldRadius = meteor.GetComponent<MeteorController>().Resize(size);
+            meteor.transform.position = GetValidSpawningPosition(worldRadius);
+            NetworkServer.Spawn(meteor);
+            _meteors[i] = meteor;
         }
     }
-        
+
+    public override void OnServerDisconnect(NetworkConnection conn)
+    {
+        if (_meteors != null)
+        {
+            foreach (GameObject meteor in _meteors)
+            {
+                NetworkServer.Destroy(meteor);
+                Destroy(meteor);
+            }
+        }
+
+        base.OnServerDisconnect(conn);
+    }
+
     private Vector2 GetValidSpawningPosition(float objectRadius)
     {
         Vector2 position = GetRandomPositionInsideBounds();
         objectRadius += minimumSpawningDistance;
-        for (int spawnAttempt = 0; spawnAttempt < maxSpawnAttempts; spawnAttempt++) {
+        for (int spawnAttempt = 0; spawnAttempt < maxSpawnAttempts; spawnAttempt++)
+        {
             RaycastHit2D hit = Physics2D.CircleCast(
                 position,
                 objectRadius,
@@ -76,7 +95,7 @@ public class GameManager : NetworkManager
             {
                 break;
             }
-                
+
             position = GetRandomPositionInsideBounds();
             if (spawnAttempt == maxSpawnAttempts - 1)
             {
@@ -86,7 +105,7 @@ public class GameManager : NetworkManager
 
         return position;
     }
-    
+
     private Vector2 GetRandomPositionInsideBounds()
     {
         float x = Random.Range(_bounds.xMin, _bounds.xMax);
