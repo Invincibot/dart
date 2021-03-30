@@ -4,12 +4,10 @@ using System.Collections.Generic;
 using Mirror;
 using UnityEngine;
 
-public class MeteorController : NetworkBehaviour
+public class MeteorController : HealthController
 {
     private static float unitSize = 0.01f;
     private static float startSize = 0.05f;
-
-    [SerializeField] private int size;
 
     public override void OnStartServer()
     {
@@ -20,31 +18,20 @@ public class MeteorController : NetworkBehaviour
 
     public float Resize(int newSize)
     {
-        size = newSize;
+        health = newSize;
         return ScaleToSize();
     }
 
     private float ScaleToSize()
     {
-        float worldRadius = startSize + (size - 1) * unitSize;
+        float worldRadius = startSize + (health - 1) * unitSize;
         transform.localScale = worldRadius * Vector3.one;
         return worldRadius;
     }
 
-    [ServerCallback]
-    private void OnTriggerEnter2D(Collider2D other)
+    public override void Damage(int damage)
     {
-        if (other.CompareTag("Bullet"))
-        {
-            size -= 1;
-            Destroy(other.gameObject);
-            if (size <= 0)
-            {
-                Destroy(gameObject);
-                return;
-            }
-
-            ScaleToSize();
-        }
+        base.Damage(damage);
+        if (health > 0) ScaleToSize();
     }
 }

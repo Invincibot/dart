@@ -30,6 +30,7 @@ public class PlayerController : NetworkBehaviour
         _fireAction = playerInput.actions["Fire"];
     }
 
+    [ClientCallback]
     private void Update()
     {
         if (!isLocalPlayer) return;
@@ -38,10 +39,7 @@ public class PlayerController : NetworkBehaviour
         _rigidbody2D.AddRelativeForce(moveDirection.y * moveSpeed * Time.deltaTime * Vector2.right);
         _rigidbody2D.angularVelocity = -moveDirection.x * rotateSpeed;
 
-        if (_fireAction.triggered)
-        {
-            CmdFire();
-        }
+        if (_fireAction.triggered) CmdFire();
     }
     
     [Command]
@@ -50,15 +48,5 @@ public class PlayerController : NetworkBehaviour
         GameObject bullet = Instantiate(bulletPrefab, firePoint.position, transform.rotation);
         Physics2D.IgnoreCollision(_collider2D, bullet.GetComponent<Collider2D>());
         NetworkServer.Spawn(bullet);
-    }
-
-    [ServerCallback]
-    private void OnTriggerEnter2D(Collider2D other)
-    {
-        if (other.gameObject.CompareTag("Bullet"))
-        {
-            Destroy(gameObject);
-            Destroy(other.gameObject);
-        }
     }
 }

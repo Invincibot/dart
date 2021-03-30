@@ -4,13 +4,14 @@ using UnityEngine;
 [AddComponentMenu("")]
 public class MainNetworkManager : NetworkManager
 {
-    [Header("Boundary Walls")]
-    [SerializeField] private Transform[] boundaryWalls;
+    [Header("Boundary Walls")] [SerializeField]
+    private Transform[] boundaryWalls;
 
     private Rect _bounds;
 
-    [Header("Meteor Settings")] 
-    [SerializeField] private GameObject meteorPrefab;
+    [Header("Meteor Settings")] [SerializeField]
+    private GameObject meteorPrefab;
+
     [SerializeField] [Range(0, 1000)] private float maxForce = 2;
     [SerializeField] [Range(0.01f, 1f)] private float minimumSpawningDistance = 0.05f;
     private static int maxSpawnAttempts = 100;
@@ -32,6 +33,7 @@ public class MainNetworkManager : NetworkManager
         _bounds.yMin = boundaryWalls[3].position.y;
 
         meteorPrefab = spawnPrefabs.Find(prefab => prefab.name == "Meteor");
+        SpawnMeteors();
     }
 
     public override void OnServerAddPlayer(NetworkConnection conn)
@@ -42,11 +44,6 @@ public class MainNetworkManager : NetworkManager
         float angle = Vector2.Angle(Vector2.right, _bounds.center - startingPosition);
         player.transform.rotation = Quaternion.Euler(0, 0, angle);
         NetworkServer.AddPlayerForConnection(conn, player);
-
-        if (numPlayers > 1)
-        {
-            SpawnMeteors();
-        }
     }
 
     private void SpawnMeteors()
@@ -66,20 +63,6 @@ public class MainNetworkManager : NetworkManager
         }
     }
 
-    public override void OnServerDisconnect(NetworkConnection conn)
-    {
-        if (_meteors != null)
-        {
-            foreach (GameObject meteor in _meteors)
-            {
-                NetworkServer.Destroy(meteor);
-                Destroy(meteor);
-            }
-        }
-
-        base.OnServerDisconnect(conn);
-    }
-
     private Vector2 GetValidSpawningPosition(float objectRadius)
     {
         Vector2 position = GetRandomPositionInsideBounds();
@@ -91,16 +74,11 @@ public class MainNetworkManager : NetworkManager
                 objectRadius,
                 Vector2.zero
             );
-            if (!hit)
-            {
-                break;
-            }
+            if (!hit) break;
 
             position = GetRandomPositionInsideBounds();
             if (spawnAttempt == maxSpawnAttempts - 1)
-            {
                 Debug.LogError($"Maximum spawn attempts ({maxSpawnAttempts}) exceeded");
-            }
         }
 
         return position;

@@ -151,4 +151,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2405cd21c4e729247b420fa3eb9d2b72, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  syncMode: 0
+  syncInterval: 0.1
   bulletSpeed: 5
+  lifetime: 2.5
