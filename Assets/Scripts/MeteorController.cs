@@ -1,14 +1,22 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using Mirror;
 using UnityEngine;
 
-public class MeteorController : MonoBehaviour
+public class MeteorController : NetworkBehaviour
 {
     private static float unitSize = 0.01f;
     private static float startSize = 0.05f;
     
     [SerializeField] private int size;
+
+    public override void OnStartServer()
+    {
+        base.OnStartServer();
+
+        GetComponent<Rigidbody2D>().simulated = true;
+    }
 
     public float Resize(int newSize)
     {
@@ -23,6 +31,7 @@ public class MeteorController : MonoBehaviour
         return worldRadius;
     }
     
+    [ServerCallback]
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (other.CompareTag("Bullet"))
