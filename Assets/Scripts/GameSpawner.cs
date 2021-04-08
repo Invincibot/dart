@@ -1,13 +1,14 @@
 ﻿using Mirror;
 using UnityEngine;
 
-[AddComponentMenu("")]
-public class MainNetworkManager : NetworkManager
+public class GameSpawner : NetworkBehaviour
 {
-    [Header("Boundary Walls")] [SerializeField]
-    private Transform[] boundaryWalls;
+    public Transform[] boundaryWalls;
+    [SerializeField] private GameObject boundaryWallPrefab;
+    [HideInInspector] public Rect bounds;
 
-    private Rect _bounds;
+    [Header("Player Settings")] [SerializeField]
+    private GameObject playerPrefab;
 
     [Header("Meteor Settings")] [SerializeField]
     private GameObject meteorPrefab;
@@ -21,46 +22,46 @@ public class MainNetworkManager : NetworkManager
     [SerializeField] private int minMeteorSize = 1;
     [SerializeField] private int maxMeteorSize = 5;
 
-    private GameObject[] _meteors;
-
-    public override void OnStartServer()
+    public void SpawnBounds()
     {
-        base.OnStartServer();
-
-        _bounds.xMax = boundaryWalls[0].position.x;
-        _bounds.yMax = boundaryWalls[1].position.y;
-        _bounds.xMin = boundaryWalls[2].position.x;
-        _bounds.yMin = boundaryWalls[3].position.y;
-
-        meteorPrefab = spawnPrefabs.Find(prefab => prefab.name == "Meteor");
-        SpawnMeteors();
+        foreach (Transform boundaryWall in boundaryWalls)
+        {
+            GameObject wall = Instantiate(boundaryWallPrefab, boundaryWall.position, boundaryWall.rotation);
+            NetworkServer.Spawn(wall);
+        }
     }
 
-    public override void OnServerAddPlayer(NetworkConnection conn)
+    [Server]
+    public GameObject SpawnPlayer()
     {
         GameObject player = Instantiate(playerPrefab);
         Vector2 startingPosition = GetValidSpawningPosition(player.transform.localScale.magnitude);
         player.transform.position = startingPosition;
-        float angle = Vector2.Angle(Vector2.right, _bounds.center - startingPosition);
+        float angle = Vector2.Angle(Vector2.right, bounds.center - startingPosition);
         player.transform.rotation = Quaternion.Euler(0, 0, angle);
-        NetworkServer.AddPlayerForConnection(conn, player);
+        return player;
     }
 
-    private void SpawnMeteors()
+    [Server]
+    public void SpawnMeteors()
     {
+        if (!NetworkServer.active) return;
+
         int numMeteors = Random.Range(minMeteors, maxMeteors + 1);
-        _meteors = new GameObject[numMeteors];
         for (int i = 0; i < numMeteors; i++)
         {
-            GameObject meteor = Instantiate(meteorPrefab);
-            float force = Random.Range(0, maxForce);
-            meteor.GetComponent<Rigidbody2D>().AddForce(Random.insideUnitCircle * force);
-            int size = Random.Range(minMeteorSize, maxMeteorSize + 1);
-            float worldRadius = meteor.GetComponent<MeteorController>().Resize(size);
-            meteor.transform.position = GetValidSpawningPosition(worldRadius);
-            NetworkServer.Spawn(meteor);
-            _meteors[i] = meteor;
+            SpawnMeteor();
         }
+    }
+
+    private void SpawnMeteor()
+    {
+        int size = Random.Range(minMeteorSize, maxMeteorSize + 1);
+        float worldRadius = MeteorController.GetMeteorRadius(size);
+        GameObject meteor = Instantiate(meteorPrefab, GetValidSpawningPosition(worldRadius), Quaternion.identity);
+        float force = Random.Range(0, maxForce);
+        meteor.GetComponent<Rigidbody2D>().AddForce(Random.insideUnitCircle * force);
+        NetworkServer.Spawn(meteor);
     }
 
     private Vector2 GetValidSpawningPosition(float objectRadius)
@@ -86,8 +87,8 @@ public class MainNetworkManager : NetworkManager
 
     private Vector2 GetRandomPositionInsideBounds()
     {
-        float x = Random.Range(_bounds.xMin, _bounds.xMax);
-        float y = Random.Range(_bounds.yMin, _bounds.yMax);
+        float x = Random.Range(bounds.xMin, bounds.xMax);
+        float y = Random.Range(bounds.yMin, bounds.yMax);
         return new Vector2(x, y);
     }
 }

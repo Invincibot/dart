@@ -24,7 +24,7 @@ public class MeteorController : HealthController
 
     private float ScaleToSize()
     {
-        float worldRadius = startSize + (health - 1) * unitSize;
+        float worldRadius = GetMeteorRadius(health);
         transform.localScale = worldRadius * Vector3.one;
         return worldRadius;
     }
@@ -33,5 +33,10 @@ public class MeteorController : HealthController
     {
         base.Damage(damage);
         if (health > 0) ScaleToSize();
+    }
+
+    public static float GetMeteorRadius(int size)
+    {
+        return startSize + (size - 1) * unitSize;
     }
 }

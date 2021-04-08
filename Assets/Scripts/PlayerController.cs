@@ -41,7 +41,7 @@ public class PlayerController : NetworkBehaviour
 
         if (_fireAction.triggered) CmdFire();
     }
-    
+
     [Command]
     private void CmdFire()
     {
