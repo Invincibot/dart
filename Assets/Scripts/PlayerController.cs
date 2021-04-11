@@ -4,8 +4,11 @@ using Mono.CecilX;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class PlayerController : NetworkBehaviour
+public class PlayerController : HealthController
 {
+    public int index;
+    public bool dead;
+    
     [SerializeField] [Range(1, 50)] private float moveSpeed;
     [SerializeField] [Range(1, 360)] private float rotateSpeed;
 
@@ -21,6 +24,7 @@ public class PlayerController : NetworkBehaviour
     {
         _rigidbody2D = GetComponent<Rigidbody2D>();
         _collider2D = GetComponent<Collider2D>();
+        dead = false;
     }
 
     public override void OnStartAuthority()
@@ -48,5 +52,14 @@ public class PlayerController : NetworkBehaviour
         GameObject bullet = Instantiate(bulletPrefab, firePoint.position, transform.rotation);
         Physics2D.IgnoreCollision(_collider2D, bullet.GetComponent<Collider2D>());
         NetworkServer.Spawn(bullet);
+    }
+
+    public override void Damage(int damage)
+    {
+        health -= damage;
+        if (health > 0) return;
+        gameObject.SetActive(false);
+        dead = true;
+        ((NetworkRoomManager) NetworkManager.singleton).PlayerDead(index);
     }
 }

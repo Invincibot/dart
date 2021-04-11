@@ -59,6 +59,7 @@ public class GameSpawner : NetworkBehaviour
         int size = Random.Range(minMeteorSize, maxMeteorSize + 1);
         float worldRadius = MeteorController.GetMeteorRadius(size);
         GameObject meteor = Instantiate(meteorPrefab, GetValidSpawningPosition(worldRadius), Quaternion.identity);
+        meteor.GetComponent<MeteorController>().Resize(size);
         float force = Random.Range(0, maxForce);
         meteor.GetComponent<Rigidbody2D>().AddForce(Random.insideUnitCircle * force);
         NetworkServer.Spawn(meteor);
