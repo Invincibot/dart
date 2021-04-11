@@ -22,13 +22,18 @@ public class NetworkRoomPlayer : Mirror.NetworkRoomPlayer
     {
         NetworkRoomManager networkRoomManager = (NetworkRoomManager) NetworkManager.singleton;
         _playersPanel = networkRoomManager.playersPanel;
-        
+
         if (!_roomPlayerUI) _roomPlayerUI = Instantiate(roomPlayerUIPrefab, _playersPanel);
         _roomPlayerButton = _roomPlayerUI.GetComponentInChildren<Button>();
         _roomPlayerImage = _roomPlayerUI.GetComponent<Image>();
         _roomPlayerText = _roomPlayerButton.GetComponentInChildren<Text>();
         _roomPlayerButton.interactable = isLocalPlayer;
-        if (!isLocalPlayer) return;
+        if (!isLocalPlayer)
+        {
+            _roomPlayerUI.GetComponentInChildren<Text>().text = "Player " + (index + 1);
+            ReadyStateChanged(false, readyToBegin);
+            return;
+        }
         _roomPlayerButton.onClick.AddListener(Ready);
     }
 
@@ -36,8 +41,11 @@ public class NetworkRoomPlayer : Mirror.NetworkRoomPlayer
     {
         NetworkRoomManager networkRoomManager = (NetworkRoomManager) NetworkManager.singleton;
         networkRoomManager.startButton.gameObject.SetActive(isServer);
-        _roomPlayerUI.GetComponentInChildren<Text>().text = "Player " + (index + 1);
-        ReadyStateChanged(false, readyToBegin);
+        
+        if (isLocalPlayer)
+        {
+            _roomPlayerUI.GetComponentInChildren<Text>().text = "Player " + (index + 1);
+        }
     }
 
     public override void OnStopClient()

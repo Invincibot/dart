@@ -24,7 +24,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4828521625473428066}
   m_LocalRotation: {x: -0, y: -0, z: 0.7071068, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: -5, z: 0}
+  m_LocalPosition: {x: 0, y: -50, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 6168688725811237345}
@@ -106,18 +106,18 @@ MonoBehaviour:
     type: 3}
   bounds:
     serializedVersion: 2
-    x: -5
-    y: -5
-    width: 10
-    height: 10
+    x: -50
+    y: -50
+    width: 100
+    height: 100
   playerPrefab: {fileID: 9015156975592004129, guid: a5a46a4e09e0c1d4fb02fcc06c243db5,
     type: 3}
   meteorPrefab: {fileID: 2944940824702718759, guid: b68b84e0172c4e44c837339eb3d0ca5f,
     type: 3}
   maxForce: 2
   minimumSpawningDistance: 0.05
-  minMeteors: 5
-  maxMeteors: 25
+  minMeteors: 500
+  maxMeteors: 2500
   minMeteorSize: 1
   maxMeteorSize: 5
 --- !u!1 &6168688727803664590
@@ -144,7 +144,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6168688727803664590}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -5, y: 0, z: 0}
+  m_LocalPosition: {x: -50, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 6168688725811237345}
@@ -174,7 +174,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8496591061194500036}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 5, y: 0, z: 0}
+  m_LocalPosition: {x: 50, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 6168688725811237345}
@@ -204,7 +204,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8496591062556355934}
   m_LocalRotation: {x: -0, y: -0, z: 0.7071068, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: 5, z: 0}
+  m_LocalPosition: {x: 0, y: 50, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 6168688725811237345}

@@ -48,7 +48,7 @@ GameObject:
   - component: {fileID: 7093449314722977162}
   - component: {fileID: -6126379086768338160}
   m_Layer: 0
-  m_Name: Player
+  m_Name: Game Player
   m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -183,6 +183,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   syncMode: 0
   syncInterval: 0.1
+  health: 0
+  index: 0
+  dead: 0
   moveSpeed: 20.1
   rotateSpeed: 150
   firePoint: {fileID: 1338157562}

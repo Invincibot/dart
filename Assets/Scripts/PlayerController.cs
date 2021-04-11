@@ -1,14 +1,13 @@
-﻿using System;
-using Mirror;
-using Mono.CecilX;
+﻿using Mirror;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class PlayerController : HealthController
 {
-    public int index;
-    public bool dead;
+    public bool controlsEnabled;
     
+    public int index;
+
     [SerializeField] [Range(1, 50)] private float moveSpeed;
     [SerializeField] [Range(1, 360)] private float rotateSpeed;
 
@@ -24,7 +23,7 @@ public class PlayerController : HealthController
     {
         _rigidbody2D = GetComponent<Rigidbody2D>();
         _collider2D = GetComponent<Collider2D>();
-        dead = false;
+        controlsEnabled = false;
     }
 
     public override void OnStartAuthority()
@@ -32,12 +31,13 @@ public class PlayerController : HealthController
         PlayerInput playerInput = GetComponent<PlayerInput>();
         _moveAction = playerInput.actions["Move"];
         _fireAction = playerInput.actions["Fire"];
+        if (!(Camera.main is null)) Camera.main.GetComponent<CameraController>().target = transform;
     }
 
     [ClientCallback]
     private void Update()
     {
-        if (!isLocalPlayer) return;
+        if (!controlsEnabled || !isLocalPlayer) return;
 
         Vector2 moveDirection = _moveAction.ReadValue<Vector2>();
         _rigidbody2D.AddRelativeForce(moveDirection.y * moveSpeed * Time.deltaTime * Vector2.right);
@@ -59,7 +59,6 @@ public class PlayerController : HealthController
         health -= damage;
         if (health > 0) return;
         gameObject.SetActive(false);
-        dead = true;
         ((NetworkRoomManager) NetworkManager.singleton).PlayerDead(index);
     }
 }
