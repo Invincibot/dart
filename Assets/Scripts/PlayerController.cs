@@ -1,10 +1,11 @@
-﻿using Mirror;
+﻿using System.Collections.Generic;
+using Mirror;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class PlayerController : HealthController
 {
-    public bool controlsEnabled;
+    [SyncVar] public bool controlsEnabled;
     
     public int index;
 
@@ -19,6 +20,9 @@ public class PlayerController : HealthController
     private InputAction _moveAction;
     private InputAction _fireAction;
 
+    [SerializeField] private GameObject enemyArrowPrefab;
+    private bool _spawnedEnemyArrows;
+    
     private void Start()
     {
         _rigidbody2D = GetComponent<Rigidbody2D>();
@@ -26,18 +30,48 @@ public class PlayerController : HealthController
         controlsEnabled = false;
     }
 
-    public override void OnStartAuthority()
+    public override void OnStartLocalPlayer()
     {
         PlayerInput playerInput = GetComponent<PlayerInput>();
         _moveAction = playerInput.actions["Move"];
         _fireAction = playerInput.actions["Fire"];
         if (!(Camera.main is null)) Camera.main.GetComponent<CameraController>().target = transform;
+        
+        _spawnedEnemyArrows = false;
     }
+    
+    [Client]
+    private void SpawnEnemyArrows()
+    {
+        GameObject[] enemies = GameObject.FindGameObjectsWithTag("Player");
 
-    [ClientCallback]
+        if (enemies.Length == 1) return;
+
+        _spawnedEnemyArrows = true;
+        
+        foreach (GameObject enemy in enemies)
+        {
+            if (enemy == gameObject) continue;
+            
+            Debug.Log(enemy.transform.name);
+            
+            GameObject arrow = Instantiate(enemyArrowPrefab, transform);
+            arrow.GetComponent<EnemyArrowController>().target = enemy;
+        }
+    }
+    
+
+    [Client]
     private void Update()
     {
-        if (!controlsEnabled || !isLocalPlayer) return;
+        if (!isLocalPlayer) return;
+
+        if (!_spawnedEnemyArrows)
+        {
+            SpawnEnemyArrows();
+        }
+
+        if (!controlsEnabled) return;
 
         Vector2 moveDirection = _moveAction.ReadValue<Vector2>();
         _rigidbody2D.AddRelativeForce(moveDirection.y * moveSpeed * Time.deltaTime * Vector2.right);

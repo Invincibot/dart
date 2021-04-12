@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class CameraController : MonoBehaviour
 {
-    private static readonly Vector3 spacing = Vector3.back * 10;
+    private static readonly Vector3 Spacing = Vector3.back * 10;
 
     public Transform target;
 
@@ -24,11 +24,12 @@ public class CameraController : MonoBehaviour
         _currentColor = colors[0];
         _nextColor = colors[1];
         _camera = GetComponent<Camera>();
+        if (target == null) target = transform;
     }
 
     private void LateUpdate()
     {
-        transform.position = target.transform.position + spacing;
+        transform.position = target.transform.position + Spacing;
 
         _lerpDistance += colorShiftSpeed * Time.deltaTime;
         if (_lerpDistance >= 1)

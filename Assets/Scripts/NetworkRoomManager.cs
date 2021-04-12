@@ -1,5 +1,5 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Linq;
 using Mirror;
 using UnityEngine;
 using UnityEngine.UI;
@@ -23,6 +23,7 @@ public class NetworkRoomManager : Mirror.NetworkRoomManager
     [SerializeField] private Text networkAddressText;
 
     private Dictionary<int, GameObject> _alivePlayers;
+    private int _localPlayerIndex;
     private GameSpawner _gameSpawner;
     [SerializeField] private GameObject cameraPrefab;
 
@@ -51,7 +52,7 @@ public class NetworkRoomManager : Mirror.NetworkRoomManager
         _gameSpawner = Instantiate(gameSpawnerPrefab).GetComponent<GameSpawner>();
         _gameSpawner.SpawnBounds();
         _gameSpawner.SpawnMeteors();
-        
+
         Invoke(nameof(EnablePlayers), freezeTime);
     }
 
@@ -59,7 +60,8 @@ public class NetworkRoomManager : Mirror.NetworkRoomManager
     {
         foreach (GameObject player in _alivePlayers.Values)
         {
-            player.GetComponent<PlayerController>().controlsEnabled = true;
+            PlayerController playerController = player.GetComponent<PlayerController>();
+            playerController.controlsEnabled = true;
         }
     }
 
@@ -72,7 +74,7 @@ public class NetworkRoomManager : Mirror.NetworkRoomManager
         Instantiate(cameraPrefab);
 
         startPanel.SetActive(true);
-        _startPanelController.SetEnemyText(numPlayers - 1);
+        _startPanelController.SetEnemyText(roomSlots.Count - 1);
 
         Invoke(nameof(DisableStartScreen), freezeTime);
     }
@@ -87,11 +89,12 @@ public class NetworkRoomManager : Mirror.NetworkRoomManager
         GameObject player = _gameSpawner.SpawnPlayer();
         NetworkRoomPlayer networkRoomPlayer = roomPlayer.GetComponent<NetworkRoomPlayer>();
         int index = networkRoomPlayer.index;
+        player.transform.name = "Player " + (index + 1);
         _alivePlayers.Add(index, player);
         PlayerController playerController = player.GetComponent<PlayerController>();
         playerController.controlsEnabled = false;
         playerController.index = index;
-        
+
         return player;
     }
 
