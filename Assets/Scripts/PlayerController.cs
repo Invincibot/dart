@@ -15,6 +15,9 @@ public class PlayerController : HealthController
     [SerializeField] private Transform firePoint;
     [SerializeField] private GameObject bulletPrefab;
 
+    [SerializeField] [Range(0, 5)] private float fireRate;
+    private float _lastFire;
+    
     private Rigidbody2D _rigidbody2D;
     private Collider2D _collider2D;
     private InputAction _moveAction;
@@ -83,6 +86,9 @@ public class PlayerController : HealthController
     [Command]
     private void CmdFire()
     {
+        if (Time.time - _lastFire < fireRate) return;
+
+        _lastFire = Time.time;
         GameObject bullet = Instantiate(bulletPrefab, firePoint.position, transform.rotation);
         Physics2D.IgnoreCollision(_collider2D, bullet.GetComponent<Collider2D>());
         NetworkServer.Spawn(bullet);
